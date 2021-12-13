@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <!-- Moralis SDK code -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+  </head>
+  <body>
+    <h1>Gas Stats With Moralis</h1>
+
+    <button id="btn-login">Moralis Login</button>
+    <button id="btn-logout">Logout</button>
+
+        <script>
+          // connect to Moralis server
+          const serverUrl = "https://myrlapze54ue.usemoralis.com:2053/server";
+          const appId = "B5cPaOcXU2oQ9waLjzCP7qoAeiWgifAsOUlUwLTY";
+          const CONTRACT_ADDRESS = "0xb7B1F3A6E21004176ac6801606431250777BB49d"; //update with your details
+          Moralis.start({ serverUrl, appId });
+    
+          // add from here down
+          async function initializeApp(){
+              // after initializing the app and the rest of the boiler plate stuff...
+              const options = {address: CONTRACT_ADDRESS, chain: "rinkeby"}; // change the chain name to whatever testnet you are testing on
+              let NFTs = await Moralis.Web3API.token.getAllTokenIds(options); // this will get all the token IDs for the NFTs minted by the contract address on the chain you are deploying too
+              renderInventory(NFTs); // this will trigger the render fucntion for all your NFTs
+              //rest of your function...
+          }
+          function renderInventory(NFTs){
+              const parent = document.getElementById("placeholder"); // this specifies where to pop the images based on the div's id
+              try {
+                  for (let i = 0; i < NFTs.result.length; i++){ // cycles through all the minted NFTs from the contract
+                      const nft = JSON.parse(NFTs.result[i].metadata); // JSON parses the metadata for each one
+                      let htmlString = 
+                      <div class="your-image-class-for-css">
+                        <img alt="image" src="${nft.image}"/> 
+                      </div>
+                       // this creates the HTML code to inject from javascript back into your HTML with the onchain image grabbed from the NFT metadata
+                      let item = document.createElement("div");
+                      item.innerHTML = htmlString;
+                      parent.appendChild(item); // and now the process is complete and the SVG image is appended to placeholder div
+                  }
+              } catch(error) {
+                  console.log("error")
+              }
+          }
+          
+          async function login() {
+            let user = Moralis.User.current();
+            if (!user) {
+              user = await Moralis.authenticate();
+            }
+            console.log("logged in user:", user);
+          }
+    
+          async function logOut() {
+            await Moralis.User.logOut();
+            console.log("logged out");
+          }
+    
+          document.getElementById("btn-login").onclick = login;
+          document.getElementById("btn-logout").onclick = logOut;
+        </script>
+  </body>
+</html>
